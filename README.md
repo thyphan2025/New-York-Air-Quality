@@ -9,7 +9,7 @@ The dataset contains surveillance data on air quality in New York City, highligh
 * [NYC Air Quality dataset](https://catalog.data.gov/dataset/air-quality)
 
 # Project Files
-* Air-Quality – HTML Report: Full interactive report with code, visualizations (mostly Plotly), and interpretations. Includes a few static plots.
+* Air-Quality – HTML Report: Interactive report with code, Plotly visualizations, and a few static plots.
 * Air-Quality.Rmd - R markdown
 
 # Interactive Report
