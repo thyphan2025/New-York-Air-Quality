@@ -1,0 +1,596 @@
+---
+title: "New York Air Quality Analysis"
+output: html_document
+date: "2025-07-11"
+---
+## Author: Thy Phan
+
+# A. Data Cleaning
+
+First, I will load the require library tidyverse and CSV file to R and display a first few rows to inspect the dataset.
+
+```{r}
+# Load libraries
+library(tidyverse)
+```
+
+```{r}
+# Load CSV file to R
+setwd("/Users/tampham/Desktop")
+getwd()
+AQ <- read.csv("Air_Quality.csv")
+```
+
+```{r}
+# Display first few rows of dataset
+head(AQ)
+```
+
+Then, I check for structure of the dataset and missing values. At first, I notice that the Message column contained NA values for all 18862 rows.
+
+```{r}
+# Check structure of datatset
+str(AQ)
+```
+
+```{r}
+# Check missing value
+colSums(is.na(AQ))
+```
+
+I decide to drop this column and create the new data frame AQ1 without the Message column.
+
+```{r}
+# New dataframe, Message column has been removed
+AQ1 <- AQ[ , colSums(is.na(AQ))==0]
+```
+
+# B. Data Analysis
+
+## 1. Bar Chart of Indicators
+
+I loaded the required libraries:
+
+* forcats to reorder factor levels by their frequency using fct_infreq()
+* plotly to create interactive plots
+
+I use ggplot() to build the chart and convert it to an interactive plot using ggplotly().
+
+```{r}
+# Bar Chart of indicators
+library(plotly)
+library(forcats)
+p0 <-ggplot(AQ1, aes(y = fct_infreq(Name))) + geom_bar() + 
+  labs(title = "Bar Chart of Indicators", y = "", x = "Count") + theme_light()
+ggplotly(p0)
+```
+
+This bar chart displays the indicators used to assess New York Air Quality. The x-axis represents the number of recorded measurements, while the y-axis lists various types of air quality indicators, including:
+
+* Pollutants from emissions (e.g., SO₂, NOₓ, PM2.5)
+* Outdoor air toxins (e.g., benzene, formaldehyde)
+* Health outcomes (e.g., asthma ER visits, hospitalizations)
+* Gaseous pollutants like Ozone (O₃) and Nitrogen Dioxide (NO₂)
+* Fine Particles (PM2.5)
+* Annual vehicle miles traveled (trucks, cars, etc.)
+
+The most frequently recorded indicators are Nitrogen Dioxide (NO₂) and Fine Particles (PM2.5), each with 6,345 counts, followed by Ozone (O₃) with 2,115 counts.
+
+## 2. Histogram of Data Value 
+
+```{r}
+# Histrogram of indicators measurement
+ggplot(AQ1, aes(x=Data.Value)) + geom_histogram( fill="cyan", color = "black", binwidth = 5) + 
+  labs(title = "Histogram of Data Value", x="Pollutant Measurement", y = "Count") 
+```
+
+This chart shows how often different air pollution levels were measured. Most of the measurements are low—especially between 0 and 10—and occurred over 6,000 times. A few higher values, up to 400, were also recorded but are much less common.
+This pattern tells us that low pollutant levels are the most frequent, while high levels are rare but still present in the air quality data.
+
+## 3. Stack Bar Plot of Geography Type by Measure
+
+```{r}
+# Bar Chart of Geography Type 
+ggplot(AQ1,aes(Geo.Type.Name, fill =Measure)) + geom_bar(color=gray(0.55)) + 
+  labs(title = "Bar Chart of Geography Type", x= "Geo Type Name", y ="Count") + 
+  scale_fill_brewer(palette = "Set2")
+```
+
+This stacked bar chart shows how many air quality measurements were recorded across different geographic areas in New York City:
+
+* Boroughs (e.g., Manhattan, Brooklyn)
+* Community Districts (CD)
+* Citywide
+* United Hospital Fund (UHF) areas, which include UHF34 and UHF42
+
+The tallest bars are from UHF42 and CD, meaning these areas have the most data recorded.
+The "Mean" measure (shown in yellow) appears most often across all areas.
+
+The meaning of each Geo Type Name:
+
+* Borough: One of the five main divisions of NYC
+* CD (Community Districts): Administrative areas managed by the city
+* Citywide: The entire NYC area
+* UHF (United Hospital Fund): Zones used for health data, grouped into either 34 or 42 neighborhood-based regions
+
+This chart helps us understand where air quality data is most frequently collected and what type of measurements are most common.
+
+## 4. Time Series Analysis
+
+To perform Time Series Analysis of Ozone (O3), Nitrogen dioxide (NO2), and Fine Particles (PM2.5), we need to convert Start Date (character format) to (date format).
+
+```{r}
+# Convert Start Date column to Date format
+AQ1$Start_Date <- as.Date(AQ1$Start_Date, format = "%m/%d/%Y")
+str(AQ1)
+```
+## 4a. Time Series Analysis of NO2
+
+AQ_NO2 is a new data frame created from AQ1 where Name is filtered by Nitrogen dioxide (NO2). The Date x-axis has been divided by every two years and have year format.
+
+```{r}
+# Time Series Analysis of NO2
+library(plotly)
+AQ_NO2 <- AQ1[AQ1$Name == "Nitrogen dioxide (NO2)", ]
+p <- ggplot(AQ_NO2, aes(Start_Date,Data.Value)) + geom_line(color = "steelblue") + 
+  labs(title = "Time Series of NO2", x = "Date", y ="NO2") +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") + 
+  geom_smooth(method = "loess", se = FALSE, linetype = "dashed") + theme_minimal()
+ggplotly(p)
+```
+
+This time series plot displays the average levels of Nitrogen Dioxide (NO₂) in New York from 2010 to 2023. The data show a clear downward trend, with NO₂ levels gradually decreasing over the years. Most values fall between 10 and 30, with occasional peaks, but the overall pattern suggests improving air quality. This steady decline may reflect the impact of cleaner vehicle technologies, stricter emission regulations, and other air quality improvement efforts in the city.
+
+## 4b. Time Series of Fine Particles
+
+AQ_FP is a new data frame created from AQ1 where Name is filtered by Fine particles (PM 2.5). The Date x-axis has been divided by every two years and have year format.
+
+```{r}
+# Time Series Analysis of Fine Particles
+AQ_FP <- AQ1[AQ1$Name == "Fine particles (PM 2.5)", ]
+p1 <- ggplot(AQ_FP, aes(Start_Date,Data.Value)) + geom_line(color = "purple") + 
+  labs(title = "Time Series of Fine Particles", x = "Date", y ="Fine particles (PM 2.5)") +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") + 
+  geom_smooth(method = "loess", se = FALSE, linetype = "dashed") + theme_minimal()
+ggplotly(p1)
+```
+
+This time series plot shows the average levels of Fine Particles (PM2.5) in New York from 2010 to 2023. The overall trend is downward, indicating that PM2.5 levels have gradually decreased over time—suggesting an improvement in air quality. Most values fall between 7 and 12, with occasional peaks. However, there is a slight increase in 2023, which may indicate a potential reversal or temporary rise in PM2.5 levels.
+
+## 4b. Time Series of Ozone (O3)
+
+AQ_O is a new data frame created from AQ1 where Name is filtered by Ozone (O3). The Date x-axis has been divided by every two years and have year format.
+
+```{r}
+# Time Series Analysis of Ozone
+AQ_O <- AQ1[AQ1$Name == "Ozone (O3)", ]
+p2 <- ggplot(AQ_O, aes(Start_Date,Data.Value)) + geom_line(color = "red") + 
+  labs(title = "Time Series of Ozone", x = "Date", y ="Ozone (O3)") +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  geom_smooth(method = "loess", se = FALSE, linetype = "dashed") + theme_minimal()
+ggplotly(p2)
+```
+
+This time series plot shows the average levels of Ozone (O₃) in New York from 2010 to 2023. The overall trend is upward, indicating that Ozone levels have gradually increased over time. Most values fall between 27 and 35, with occasional peaks. This rising pattern may suggest growing concern for ozone-related air quality in recent years.
+
+## 5a. Bar Chart - Top 10 Neighborhoods with Highest Average NO2 
+
+top_NO2 is a new data frame created from AQ_NO2, grouped by geographic place name and summarized by the average NO₂ levels. The data is then filtered to show the top 10 locations with the highest averages. In the plot, the x- and y-axes are flipped for readability, and the y-axis is marked at intervals of 5 units.
+
+```{r}
+# Summarize average NO2 by Geo Place Name (top 10)
+top_NO2 <- AQ_NO2 %>%
+  group_by(Geo.Place.Name) %>%
+  summarise(Avg_NO2 = mean(Data.Value, na.rm = TRUE)) %>%             # calculate mean of Data Value excluding NA (na.rm = TRUE)
+  arrange(desc(Avg_NO2)) %>%
+  slice_head(n = 10)
+
+# Bar chart
+p3 <- ggplot(top_NO2, aes(x = reorder(Geo.Place.Name, Avg_NO2), y = Avg_NO2, fill = Geo.Place.Name)) +
+  geom_bar(stat = "identity") + scale_fill_brewer(palette="Set3") +
+  scale_y_continuous(breaks = seq(0, max(top_NO2$Avg_NO2), by = 5)) + # break y axis every 5 units
+  coord_flip() +                                                      # flip between x and y axis
+  labs(title = "Top 10 Neighborhoods with Highest Avg NO2",
+       x = "",
+       y = "Average NO2") + 
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p3)
+```
+
+This bar chart highlights the top 10 neighborhoods in New York City with the highest average levels of Nitrogen Dioxide (NO₂), a common air pollutant. The bars are arranged from highest to lowest, making it easy to identify the areas with the most pollution. Midtown (CD5) ranks the highest with an average NO₂ level of 33.95, followed by Gramercy Park – Murray Hill at 31.66, and Chelsea – Clinton at 29.98. This visualization helps pinpoint neighborhoods that may face more serious air quality issues and could benefit from targeted environmental improvement efforts.
+
+## 5b. Bar Chart - Top 10 Neighborhoods with Highest Average Fine Particles 
+
+top_FP is a new data frame created from AQ_FP, grouped by geographic place name and summarized by the average fine particles levels. The data is then filtered to show the top 10 locations with the highest averages. In the plot, the x- and y-axes are flipped for readability, and the y-axis is marked at intervals of 5 units.
+
+```{r}
+# Summarize average Fine Particles (PM 2.5) by Geo Place Name (top 10)
+top_FP <- AQ_FP %>% 
+  group_by(Geo.Place.Name) %>%
+  summarize(Avg_FP =mean(Data.Value, na.rm = TRUE)) %>%
+  arrange(desc(Avg_FP)) %>%
+  slice_head(n = 10)
+
+# Bar Chart
+p4 <- ggplot(top_FP, aes(x = reorder(Geo.Place.Name, Avg_FP), y = Avg_FP, fill = Geo.Place.Name)) +
+  geom_bar(stat ="identity") + scale_fill_brewer(palette="Paired") +
+  scale_y_continuous(breaks = seq(0, max(top_FP$Avg_FP), by = 5)) + 
+  coord_flip() +
+  labs(title = "Top 10 Neighborhoods With Highest Average FP",
+       x = "",
+       y = "Average Fine Particles (PM 2.5)") + 
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p4)
+```
+
+This bar chart shows the top 10 neighborhoods in New York City with the highest average levels of fine particles (PM 2.5), a common air pollutant. The bars are ordered from highest to lowest, helping to easily identify the most affected areas. Midtown (CD5) has the highest average PM 2.5 level at 12.79, followed by Gramercy Park – Murray Hill (11.86), and Chelsea – Clinton (11.57). This visualization highlights neighborhoods that may face more serious air quality challenges and could be priorities for environmental improvement efforts.
+
+Midtown (CD5), Gramercy Park – Murray Hill, and Chelsea – Clinton appear in the top three for both Nitrogen Dioxide (NO₂) and Fine Particles (PM 2.5), suggesting these areas may benefit most from targeted air quality interventions.
+
+## 5c. Bar Chart - Top 10 Neighborhoods with Highest Average Ozone 
+
+top_O3 is a new data frame created from AQ_O, grouped by geographic place name and summarized by the average Ozone (O3). The data is then filtered to show the top 10 locations with the highest averages. In the plot, the x- and y-axes are flipped for readability, and the y-axis is marked at intervals of 5 units.
+
+```{r}
+# Summarize average Ozone (O3) by Geo Place Name (top 10)
+top_O3 <- AQ_O %>% 
+  group_by(Geo.Place.Name) %>%
+  summarise(Avg_O3 =mean(Data.Value, na.rm = TRUE)) %>%
+  arrange(desc(Avg_O3)) %>%
+  slice_head(n = 10)
+
+# Bar Chart
+p5 <-ggplot(top_O3, aes(x = reorder(Geo.Place.Name, Avg_O3), y = Avg_O3, fill = Geo.Place.Name)) +
+  geom_bar(stat ="identity") + scale_fill_viridis_d(option = "plasma") +
+  scale_y_continuous(breaks = seq(0, max(top_O3$Avg_O3), by = 5)) + 
+  coord_flip() +
+  labs(title = "Top 10 Neighborhoods With Highest Avg O3",
+       x = "",
+       y = "Average  Ozone (O3)") + 
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p5)
+```
+
+The earlier time series plot showed an upward trend in ozone (O₃) levels across New York City.
+
+This bar chart highlights the top 10 neighborhoods in New York City with the highest average ozone (O₃) levels. The bars are arranged from highest to lowest to allow easy comparison. Rockaway and Broad Channel (CD14) ranks the highest with an average level of 37.13, followed by Rockaways at 37.04 and Coney Island (CD13) at 35.02. This visualization helps identify neighborhoods that may face greater air quality issues and could be priorities for targeted environmental improvement efforts.
+
+## 6. Bar Chart - Top 5 Neighborhoods with Highest Average Annual Miles
+
+AQ_annual is the new data frame created from AQ1, where data is filtered for all information related to annual vehicle miles. 
+top_Annual is a new data frame created from AQ_Annual, grouped by geographic place name and summarized by the average annual vehicle miles. The data is then filtered to show the top 5 locations with the highest averages. In the plot, the x- and y-axes are flipped for readability.
+
+```{r}
+# Filter out data with Annual Vehicles Miles
+Annual_vehicle <- c("Annual vehicle miles traveled", "Annual vehicle miles traveled (cars)", "Annual vehicle miles traveled (trucks)")
+AQ_Annual <- AQ1[AQ1$Name %in% Annual_vehicle, ]
+
+# Summarize average Annual Vehicle Miles by Geo Place Name (top 5)
+top_Annual <- AQ_Annual %>% 
+  group_by(Geo.Place.Name) %>%
+  summarise(Avg_Annual =mean(Data.Value, na.rm = TRUE)) %>%
+  arrange(desc(Avg_Annual)) %>%
+  slice_head(n = 5)
+
+# Bar Chart 
+p6 <-ggplot(top_Annual, aes(x = reorder(Geo.Place.Name, Avg_Annual), y = Avg_Annual, fill = Geo.Place.Name)) +
+  geom_bar(stat ="identity") + scale_fill_viridis_d("A") + 
+  coord_flip() +
+  labs(title = "Top 5 Neighborhoods of Avg Annual Miles",
+       x = "",
+       y = "Average Annual Miles (millions of miles)") + 
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p6)
+```
+
+This bar chart highlights the top 5 neighborhoods in New York City with the highest average annual vehicle miles traveled. The bars are arranged from highest to lowest for easy comparison. Stuyvesant Town and Turtle Bay (CD6) ranks first with an average of 119.24 million miles per year, followed by Gramercy Park – Murray Hill at 118.81 million and Upper East Side (CD8) at 91.54 million. These high travel volumes may contribute to more traffic-related emissions and could be key areas to consider for transportation and environmental planning.
+
+## 7. Dot Plot - Negative Effects of Ozone and PM2.5 to Health
+
+AQ_Health is the new data frame created from AQ1, where data is filtered for all information related to negative effects of Ozone (O₃) and Fine Particles (PM2.5) to health.
+Avg_Health is a new data frame created from AQ_Health, grouped by Name and summarized by the average annual rate of negative effects per 100,000 people.
+A new column has been added to the Avg_Health data frame to indicate pollutant types (Ozone or PM 2.5).
+
+```{r}
+# Filter out data with negative effects of Ozone (O3) and Fine Particles (PM2.5) to health
+Health <- c("Asthma emergency department visits due to PM2.5", "Respiratory hospitalizations due to PM2.5 (age 20+)", "Asthma hospitalizations due to Ozone", "Cardiovascular hospitalizations due to PM2.5 (age 40+)", "Deaths due to PM2.5", "Cardiac and respiratory deaths due to Ozone", "Asthma emergency departments visits due to Ozone")
+AQ_Health <- AQ1[AQ1$Name %in% Health, ]
+# Summarize average annual rate of negative effects per 100,000 children or adults.
+Avg_Health <- AQ_Health %>%
+  group_by(Name) %>%
+  summarise(Avg_Annual_Rate =mean(Data.Value, na.rm = TRUE)) %>%
+  arrange(desc(Avg_Annual_Rate))
+# Adding a new column per pollutant types (Ozone or PM2.5)
+Avg_Health <- Avg_Health %>%
+  mutate(Pollutant = case_when(
+    grepl("Ozone", Name) ~ "Ozone",
+    grepl("PM2.5", Name) ~ "PM2.5",
+    TRUE ~ "Other"
+  ))
+```
+
+To distinguish between different pollutant types (Ozone or PM 2.5), the Pollutant column is converted to a factor. This enables the use of scale_fill_manual() in the dot plot to assign different colors based on pollutant type. 
+In the plot, the x-axis is scaled with breaks every 10 units to enhance readability.
+
+```{r}
+# Convert Pollutant to factors
+Avg_Health$Pollutant <- factor(Avg_Health$Pollutant, levels = c("Ozone", "PM2.5"))
+# Dot Plot
+p7 <- ggplot(Avg_Health, aes(x = Avg_Annual_Rate, y = reorder(Name, Avg_Annual_Rate))) +
+  geom_point(aes(fill = Pollutant), shape = 21, color = "black", size = 3) +
+  scale_fill_manual(values = c("Ozone" = "violet", "PM2.5" = "cyan")) +
+  scale_x_continuous(breaks = seq(0, max(Avg_Health$Avg_Annual_Rate), by = 10)) +
+  labs(title = "Negative Effects of Ozone and PM2.5 to Health",
+       x = "Average Annual Rate per 100,000 people", y = "") +
+  theme_minimal() + 
+  theme(plot.title = element_text(hjust = 1)) +
+  theme(legend.title = element_blank(), legend.position = "bottom") 
+ggplotly(p7)
+
+```
+
+This dot plot illustrates the average annual rates of health impacts linked to air pollutants Ozone and PM 2.5, measured per 100,000 people. Each dot represents a specific health outcome and is colored by pollutant type to help distinguish between them. The points are ordered from highest to lowest to make comparison easier.
+
+Asthma emergency department visits due to Ozone have the highest average rate at 71.87, followed by visits caused by PM 2.5 at 65.85, and deaths related to PM 2.5 at 46.08. These results highlight the significant health burden associated with air pollution.
+
+In the next section, I will further explore the top ten neighborhoods with the highest average annual rates of asthma emergency visits and deaths due to Ozone and PM 2.5.
+
+## 7a. Dot Plot - Top 10 Neighborhoods with Highest Avg Asthma Emergency Visits due to Ozone
+
+Asthma_O is the new data frame created from AQ_Health, where data is filtered for asthma emergency visits due to Ozone, grouped by Name and Geo.Place.Name, and summarized by average annual rate per 100,000 people. The data is then filtered to show the top 10 locations with the highest averages. In the plot, the x-axis is scaled with breaks every 10 units to enhance readability.
+
+```{r}
+# Filter out top 10 neighborhood names with Asthma emergency departments visits due to Ozone
+Asthma_O <- AQ_Health %>%
+  filter(Name == "Asthma emergency departments visits due to Ozone") %>%
+  group_by(Name, Geo.Place.Name) %>%
+  summarise(Avg_Annual_Rate = mean(Data.Value, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(Avg_Annual_Rate)) %>%
+  slice_head(n = 10)  
+# Dot Plot
+p8 <-ggplot(Asthma_O, aes(x = Avg_Annual_Rate, y= reorder(Geo.Place.Name, Avg_Annual_Rate))) +
+   geom_point(aes(fill = Geo.Place.Name), shape = 21, color = "black", size = 3) + 
+   scale_fill_viridis_d(option = "inferno") +
+   scale_x_continuous(breaks = seq(0, max(Asthma_O$Avg_Annual_Rate), by = 10)) +
+   labs(title ="Top 10 Neighborhoods with Highest Avg Asthma ER Visits due to Ozone",
+         x = "Average Annual Rate per 100,000 people", y = "") +
+  theme_minimal() + theme(legend.position = "none") +
+  theme(plot.title = element_text(hjust = 1))
+ggplotly(p8)
+```
+
+This dot plot highlights the top 10 neighborhoods in New York City with the highest average annual rates of asthma emergency visits attributed to Ozone exposure, measured per 100,000 people. The neighborhoods are ranked from highest to lowest to facilitate comparison. East Harlem has the highest average rate at 194.12, followed by Central Harlem – Morningside Heights at 189.88, and Hunts Point – Mott Haven at 167.24.
+
+## 7b. Dot Plot - Top 10 Neighborhoods with Highest Avg Asthma Emergency Visits due to PM2.5
+
+Asthma_PM is the new data frame created from AQ_Health, where data is filtered for asthma emergency visits due to Ozone, grouped by Name and Geo.Place.Name, and summarized by average annual rate per 100,000 people. The data is then filtered to show the top 10 locations with the highest averages. In the plot, the x-axis is scaled with breaks every 10 units to enhance readability.
+
+```{r}
+# Filter out top 10 neighborhood names with Asthma emergency departments visits due to PM2.5
+Asthma_PM <- AQ_Health %>%
+  filter(Name == "Asthma emergency department visits due to PM2.5") %>%
+  group_by(Name, Geo.Place.Name) %>%
+  summarise(Avg_Annual_Rate = mean(Data.Value, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(Avg_Annual_Rate)) %>%
+  slice_head(n = 10)  
+# Dot Plot
+p9 <-ggplot(Asthma_PM, aes(x = Avg_Annual_Rate, y= reorder(Geo.Place.Name, Avg_Annual_Rate))) +
+   geom_point(aes(fill = Geo.Place.Name), shape = 21, color = "black", size = 3) + 
+   scale_fill_viridis_d(option = "plasma") +
+   scale_x_continuous(breaks = seq(0, max(Asthma_PM$Avg_Annual_Rate), by = 10)) +
+   labs(title ="Top 10 Neighborhoods with Highest Avg Asthma ER Visits due to PM2.5",
+         x = "Average Annual Rate per 100,000 people", y = "") +
+  theme_minimal() + theme(legend.position = "none") +
+  theme(plot.title = element_text(hjust = 1))
+ggplotly(p9)
+```
+
+This dot plot highlights the top 10 neighborhoods in New York City with the highest average annual rates of asthma emergency visits attributed to PM2.5 exposure, measured per 100,000 people. The neighborhoods are ranked from highest to lowest to facilitate comparison. East Harlem shows the highest average rate at 195.15, followed by Central Harlem – Morningside Heights at 193.35, and Hunts Point – Mott Haven at 175.02.
+
+When comparing this chart with the previous one (focused on Ozone-related asthma visits), the same three neighborhoods—East Harlem, Central Harlem – Morningside Heights, and Hunts Point – Mott Haven have consistently ranked at the top. This suggests these areas are especially affected by both PM2.5 and Ozone in terms of asthma-related health issues.
+
+## 7c. Dot Plot - Top 10 Neighborhoods With Highest Avg Deaths due to PM2.5 
+
+Death_PM is the new data frame created from AQ_Health, where data is filtered for deaths due to PM2.5, grouped by Name and Geo.Place.Name, and summarized by average annual rate per 100,000 people. The data is then filtered to show the top 10 locations with the highest averages. In the plot, the x-axis is scaled with breaks every 5 units to enhance readability.
+
+```{r}
+# Filter out top 10 neighborhood names with deaths due to PM2.5
+Death_PM <- AQ_Health %>%
+  filter(Name == "Deaths due to PM2.5") %>%
+  group_by(Name, Geo.Place.Name) %>%
+  summarise(Avg_Annual_Rate = mean(Data.Value, na.rm = TRUE), .groups = "drop") %>%
+  arrange(desc(Avg_Annual_Rate)) %>%
+  slice_head(n = 10)  
+# Dot Plot
+p10 <-ggplot(Death_PM, aes(x = Avg_Annual_Rate, y= reorder(Geo.Place.Name, Avg_Annual_Rate))) +
+   geom_point(aes(fill = Geo.Place.Name), shape = 21, color = "black", size = 3) + 
+   scale_fill_viridis_d(option = "rocket") +
+   scale_x_continuous(breaks = seq(0, max(Death_PM$Avg_Annual_Rate), by = 5)) +
+   labs(title ="Top 10 Neighborhoods With Highest Avg Deaths due to PM2.5",
+         x = "Average Annual Rate per 100,000 adults/ children", y = "") +
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p10)
+```
+
+This dot plot shows the top 10 neighborhoods in New York City with the highest average annual death rates linked to PM2.5 exposure, measured per 100,000 people. The neighborhoods are sorted from highest to lowest to make comparison easier. Kingsbridge – Riverdale ranks highest at 75.53, followed by East Harlem at 65.49, and Rockaways at 62.92.
+
+Kingsbridge – Riverdale appears here for the first time, indicating a high rate of deaths due to PM2.5 but not a high rate of asthma emergency visits. In contrast, East Harlem ranks second here and has consistently appeared at the top in previous charts for asthma-related emergencies due to both Ozone and PM2.5, suggesting a broader impact of air pollution on health in that area.
+
+## 8. Boiler Emission - Total NOx, SO2, PM2.5 Emissions
+
+Boiler emissions refer to the pollutants released into the atmosphere when fuel is burned in a boiler to produce heat. These pollutants include particulate matter, carbon monoxide, sulfur dioxide, nitrogen oxides (NOx), volatile organic compounds (VOCs), and greenhouse gases like carbon dioxide. Effective control of these emissions is crucial for protecting air quality and public health. These Boiler Emissions measurement have been included in the data set: Particulate Matter (PM), Sulfur Dioxide (SO2), Nitrogen Oxides (NOx) for year of 2013 and 2015.
+
+## Data Note: The boiler emissions data (NOx, SO₂, and PM2.5) are available only for the years 2013 and 2015. In contrast, other subsets of the same dataset span a broader timeframe, from 2005 to 2023.
+
+## 8a. Box Plot - Boiler Emission - Total NOx, SO2, PM2.5 Emissions
+
+BE is the new data frame created from AQ1 for all information related to Boiler Emissions - total NOx, SO2 and PM 2.5 Emissions. 
+
+```{r}
+# Filter out Boiler Emissions data
+Boiler <-c("Boiler Emissions- Total NOx Emissions", "Boiler Emissions- Total SO2 Emissions", "Boiler Emissions- Total PM2.5 Emissions")
+BE <- AQ1[AQ1$Name %in% Boiler, ]
+# Box Plot
+p11 <- ggplot(BE, aes(x=Name, y=Data.Value, color=Name)) +
+    geom_boxplot() + 
+    labs(title = "Boiler Emissions of NOx, SO2, PM2.5", x="", y="Number per km2") +
+    theme_minimal() + theme(legend.position = "none") +
+    theme(plot.title = element_text(hjust = 0.5))+
+    theme(axis.text.x = element_text(angle = 10, hjust = 0.5))
+    ggplotly(p11)
+```
+
+This box plot visualizes total boiler emissions of NOx, PM2.5, and SO2, represented by red, green, and blue colors respectively. 
+
+NOx emissions range from a minimum of 2 to a maximum of 284.40, with a median of 27.80 and an upper fence of 132.50. There are many high outliers. 
+PM2.5 emissions have much smaller values overall, ranging from approximately 4.10 to 11.40.
+SO2 emissions range from 0 to a maximum of 99.70, with a median of 1.95 and an upper fence of 26.80. Similar to NOx, there are many outliers in SO2 data.
+
+This plot highlights the differences in emission levels and variability among the three pollutants.
+
+## 8b. Dot Plot - Top 10 Neighborhoods With Highest Average NOx Emissions
+
+top_NOx_E is the new data frame created from BE, where data is filtered for total NOx Emissions, grouped by Name and Geo.Place.Name, and summarized by average total NOx Emissions. The data is then filtered to show the top 10 neighborhoods with the highest averages. In the plot, the x-axis is scaled with breaks every 20 units to enhance readability.
+
+```{r}
+# Summarize Average Number per km2 for NOx Emissions in 2013 and 2015 (top 10)
+top_NOx_E <- BE %>%
+filter(Name == "Boiler Emissions- Total NOx Emissions") %>%
+group_by(Name, Geo.Place.Name) %>%
+summarise(Avg_Emissions = mean(Data.Value, na.rm = TRUE), .groups = "drop") %>%
+arrange(desc(Avg_Emissions)) %>%
+slice_head(n = 10)  
+# Dot Plot
+p12 <- ggplot(top_NOx_E, aes(x = Avg_Emissions, y= reorder(Geo.Place.Name, Avg_Emissions))) +
+   geom_point(aes(fill = Geo.Place.Name), shape = 21, color = "black", size = 3) + 
+  scale_x_continuous(breaks = seq(0, max(top_NOx_E$Avg_Emissions), by = 20)) +
+   labs(title ="Top 10 Neighborhoods With Highest Avg NOx",
+         x = "Average Emissions (Number per km2)", y = "") +
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p12)
+```
+
+This dot plot displays the top 10 neighborhoods in New York City with the highest average total NOx emissions per square kilometer. Neighborhoods are ranked from highest to lowest to support visual comparison. Gramercy Park – Murray Hill has the highest average at 270.45, followed by Upper East Side at 247.85, and Upper West Side at 229.20.
+
+## 8b. Dot Plot - Top 10 Neighborhoods With Highest Average SO2 Emissions
+
+top_SO is the new data frame created from BE, where data is filtered for total SO2 Emissions, grouped by Name and Geo.Place.Name, and summarized by average total SO2 Emissions. The data is then filtered to show the top 10 neighborhoods with the highest averages. In the plot, the x-axis is scaled with breaks every 10 units to enhance readability.
+
+```{r}
+# Summarize Average Number per km2 for SO2 Emissions in 2013 and 2015 (top 10)
+top_SO <- BE %>%
+filter(Name == "Boiler Emissions- Total SO2 Emissions") %>%
+group_by(Name, Geo.Place.Name) %>%
+summarise(Avg_Emissions = mean(Data.Value, na.rm = TRUE), .groups = "drop") %>%
+arrange(desc(Avg_Emissions)) %>%
+slice_head(n = 10)  
+# Dot Plot
+p13 <- ggplot(top_SO, aes(x = Avg_Emissions, y= reorder(Geo.Place.Name, Avg_Emissions))) +
+   geom_point(aes(fill = Geo.Place.Name), shape = 21, color = "black", size = 3) + 
+  scale_x_continuous(breaks = seq(0, max(top_SO$Avg_Emissions), by = 10)) +
+   labs(title ="Top 10 Neighborhoods With Highest Avg SO2",
+         x = "Average Emissions (Number per km2)", y = "") +
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p13)
+```
+
+This dot plot shows the top 10 neighborhoods in New York City with the highest average total SO₂ emissions per square kilometer. Neighborhoods are ranked from highest to lowest to facilitate visual comparison. Upper West Side has the highest average at 75.30, followed by Upper East Side at 67.20, and Gramercy Park – Murray Hill at 60.15.
+
+## 8b. Dot Plot - Top 10 Neighborhoods With Highest Average PM2.5 Emissions
+
+top_PM is the new data frame created from BE, where data is filtered for total PM2.5 Emissions, grouped by Name and Geo.Place.Name, and summarized by average total PM2.5 Emissions. The data is then filtered to show the top 10 neighborhoods with the highest averages. 
+
+```{r}
+# Summarize Average Number per km2 for PM 2.5 Emissions in 2013 and 2015 (top 10)
+top_PM <- BE %>%
+filter(Name == "Boiler Emissions- Total PM2.5 Emissions") %>%
+group_by(Name, Geo.Place.Name) %>%
+summarise(Avg_Emissions = mean(Data.Value, na.rm = TRUE), .groups = "drop") %>%
+arrange(desc(Avg_Emissions)) %>%
+slice_head(n = 10)  
+# Dot Plot
+p14 <- ggplot(top_PM, aes(x = Avg_Emissions, y= reorder(Geo.Place.Name, Avg_Emissions))) +
+   geom_point(aes(fill = Geo.Place.Name), shape = 21, color = "black", size = 3) + 
+   labs(title ="Top 10 Neighborhoods With Highest Avg PM2.5",
+         x = "Average Emissions (Number per km2)", y = "") +
+  theme_minimal() + theme(legend.position = "none") 
+ggplotly(p14)
+```
+
+This dot plot shows the top 10 neighborhoods in New York City with the highest average total PM2.5 emissions per square kilometer. Neighborhoods are ranked from highest to lowest to support visual comparison. Upper West Side has the highest average at 9.20, followed by Upper East Side at 8.25, and Gramercy Park – Murray Hill at 7.25.
+
+Compared to the previous NOx and SO₂ plots, this one shows a much smaller data range. Among the three pollutants, NOx has the highest overall average emissions per neighborhood, followed by SO₂, and then PM2.5.
+
+# C. Forecast Average Ozone Level in 2025 Using ARIMA model 
+
+ime series analysis using the ARIMA (AutoRegressive Integrated Moving Average) model in R is a widely used approach for modeling and forecasting data that varies over time. R offers functions such as arima() and auto.arima() from the forecast package to fit ARIMA models to historical data and generate forecasts based on observed patterns.
+
+In this analysis, the necessary libraries are dplyr and lubridate. The ozone_annual data frame is derived from the AQ_O dataset, where the Year is extracted from the Start_Date column. The data is then grouped by year and summarized to calculate the average ozone levels. The resulting time series spans from 2009 to 2023.
+
+```{r}
+library(dplyr)
+library(lubridate)
+# Summarize average annual ozone per year to fit ARIMA model
+ozone_annual <- AQ_O %>%
+  # extract year from Start_Date
+  mutate(Year = year(Start_Date)) %>%
+  # group by calendar year
+  group_by(Year) %>%
+  # take mean ozone (ppb) for that year
+  summarize(Avg_O3 = mean(Data.Value, na.rm = TRUE),
+            .groups = "drop") %>%
+  arrange(Year)
+head(ozone_annual)
+```
+
+I will load the required forecast package to create time series object, since it is yearly data, the frequency is 1. 
+
+```{r}
+library(forecast)
+# start at the first year, annual frequency = 1
+o3_ts <- ts(ozone_annual$Avg_O3,
+            start = min(ozone_annual$Year),
+            frequency = 1)
+```
+
+Then I will fit ARIMA model to my time series object  (o3_ts) and forecast two years ahead, 2024 and 2025. 
+
+```{r}
+# Fit ARIMA model
+fit <- auto.arima(o3_ts)
+# forecast 2 steps ahead = years 2024 and 2025
+fc <- forecast(fit, h = 2)
+```
+
+I will load required library ggrepel, create the forecast dataframe for plotting, and use autoplot() to plot.
+
+```{r}
+library(ggrepel)
+# Prepare forecast values for annotation
+forecast_years <- seq(max(ozone_annual$Year) + 1, by = 1, length.out = 2)
+forecast_df <- data.frame(
+  Year = forecast_years,
+  Forecast = as.numeric(fc$mean))
+# Basic forecast plot using autoplot
+p <- autoplot(fc) +
+  labs(title = "Annual Average Ozone: Observed + Forecast",
+    x = "Year", y = "Ozone (ppb)") +
+  theme_minimal(base_size = 13) +
+  theme( plot.title = element_text(face = "bold", hjust = 0.5),
+  axis.title.x = element_text(margin = margin(t = 10)),
+  axis.title.y = element_text(margin = margin(r = 10)))
+
+# Extract forecast mean for annotation for 2025
+mean_ozone_2025 <- round(fc$mean[2], 1)
+# Add forecast mean label
+p <- p +  annotate("text",
+          x = 2025.25, y = mean_ozone_2025,
+          label = paste0(mean_ozone_2025),
+          color = "blue", fontface = "bold", size = 4)
+print(p)
+
+```
+
+The plot shows the trend of average annual ozone levels from 2009 to 2023, along with a forecast for 2025. Based on the ARIMA model, the predicted average ozone level for 2025 is approximately 30.8 ppb. The shaded area represents the forecast uncertainty range.
+
+This forecast is based solely on historical ozone data from 2009 to 2023. It does not take into account other influential factors such as changes in traffic patterns, weather conditions, or air quality regulations. The model also assumes that past trends will continue, which may not always be the case. As a result, the further the forecast looks into the future, the greater the uncertainty. This projection offers a general outlook but should not be interpreted as a precise prediction.
