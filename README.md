@@ -29,6 +29,7 @@ R packages: tidyverse, dplyr, plotly, forecast, forcats, ggrepel, ggplot2
 - [R for Data Science (2e)](https://r4ds.hadley.nz/)
 - [ggplot2: Elegant Graphics for Data Analysis (3e)](https://ggplot2-book.org/)
 - [Color Brewer 2.0](https://colorbrewer2.org/)
+- [Color Brewer-ggplot2](https://ggplot2.tidyverse.org/reference/scale_brewer.html)
 - [Viridis color scales](https://ggplot2.tidyverse.org/reference/scale_viridis.html)
 
 
