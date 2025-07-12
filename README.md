@@ -6,7 +6,7 @@ This project analyzes air quality in New York City, focusing on Ozone (O₃), Ni
 The dataset contains surveillance data on air quality in New York City, highlighting the spatial and temporal variation in pollutant levels and exposure risks. Air pollution poses serious environmental and public health threats, especially in urban areas. Exposure to common pollutants is linked to respiratory illnesses, cardiovascular diseases, cancers, and premature death. These indicators help evaluate pollution trends and disparities across NYC neighborhoods.
 * Date range: 2005–2023
 * Metadata last updated: March 29, 2025
-* [NYC Air Quality dataset](https://catalog.data.gov/dataset/air-quality/)
+* [NYC Air Quality dataset](https://catalog.data.gov/dataset/air-quality)
 
 # Project Files
 * Air-Quality - html file - Full interactive report with code, visualizations, and interpretations (Plotly).
