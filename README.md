@@ -6,7 +6,7 @@ This project analyzes air quality in New York City, focusing on Ozone (O₃), Ni
 The dataset contains surveillance data on air quality in New York City, highlighting the spatial and temporal variation in pollutant levels and exposure risks. Air pollution poses serious environmental and public health threats, especially in urban areas. Exposure to common pollutants is linked to respiratory illnesses, cardiovascular diseases, cancers, and premature death. These indicators help evaluate pollution trends and disparities across NYC neighborhoods.
 * Date range: 2005–2023
 * Metadata last updated: March 29, 2025
-* NYC Air Quality dataset : https://catalog.data.gov/dataset/air-quality
+* [NYC Air Quality dataset](https://catalog.data.gov/dataset/air-quality/)
 
 # Project Files
 * Air-Quality - html file - Full interactive report with code, visualizations, and interpretations (Plotly).
@@ -24,5 +24,11 @@ R packages: tidyverse, dplyr, plotly, forecast, forcats, ggrepel, ggplot2
 1. Data Cleaning
 2. Exploratory Data Analysis and Visualization
 3. Time Series Forecasting (ARIMA model)
+
+# Websites/ Books That I Have Explored During My Project
+* [R for Data Science (2e)](https://r4ds.hadley.nz/)
+* [ggplot2: Elegant Graphics for Data Analysis (3e)](https://r4ds.hadley.nz/)
+* [Color Brewer 2.0](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3)
+* [ggplot2 - Viridis colour scales](https://ggplot2.tidyverse.org/reference/scale_viridis.html)
 
 
