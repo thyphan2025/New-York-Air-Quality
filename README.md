@@ -15,7 +15,7 @@ The dataset contains surveillance data on air quality in New York City, highligh
 # Interactive Report
 
 You can view the full interactive HTML report here:  
-🔗 [View Report](https://thyphan2025.github.io/New-York-Air-Quality/)
+## [View Report](https://thyphan2025.github.io/New-York-Air-Quality/)
 
 # Tools Used
 R packages: tidyverse, dplyr, plotly, forecast, forcats, ggrepel, ggplot2
@@ -25,10 +25,11 @@ R packages: tidyverse, dplyr, plotly, forecast, forcats, ggrepel, ggplot2
 2. Exploratory Data Analysis and Visualization
 3. Time Series Forecasting (ARIMA model)
 
-# Websites/ Books That I Have Explored During My Project
-* [R for Data Science (2e)](https://r4ds.hadley.nz/)
-* [ggplot2: Elegant Graphics for Data Analysis (3e)](https://r4ds.hadley.nz/)
-* [Color Brewer 2.0](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3)
-* [ggplot2 - Viridis colour scales](https://ggplot2.tidyverse.org/reference/scale_viridis.html)
+# References
+- [R for Data Science (2e)](https://r4ds.hadley.nz/)
+- [ggplot2: Elegant Graphics for Data Analysis (3e)](https://ggplot2-book.org/)
+- [Color Brewer 2.0](https://colorbrewer2.org/)
+- [Viridis color scales](https://ggplot2.tidyverse.org/reference/scale_viridis.html)
+
 
 
