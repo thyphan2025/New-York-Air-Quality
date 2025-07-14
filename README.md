@@ -18,7 +18,7 @@ You can view the full interactive HTML report here:
 ## [View Report](https://thyphan2025.github.io/New-York-Air-Quality/)
 
 # Tools Used
-R packages: tidyverse, dplyr, plotly, forecast, forcats, ggrepel, ggplot2
+R packages: tidyverse, dplyr, plotly, forecast, forcats, ggrepel, ggplot2, lubridate
 
 # Methods
 1. Data Cleaning
