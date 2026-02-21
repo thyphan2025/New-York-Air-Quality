@@ -31,6 +31,8 @@ R packages: tidyverse, dplyr, plotly, forecast, forcats, ggrepel, ggplot2, lubri
 - [Color Brewer 2.0](https://colorbrewer2.org/)
 - [Color Brewer-ggplot2](https://ggplot2.tidyverse.org/reference/scale_brewer.html)
 - [Viridis color scales](https://ggplot2.tidyverse.org/reference/scale_viridis.html)
+- [What are ARIMA models?](https://www.ibm.com/think/topics/arima-model)
+- [forecast: Forecasting Functions for Time Series and Linear Models](https://cran.r-project.org/web/packages/forecast/index.html)
 
 
 
