@@ -11,7 +11,7 @@ The dataset contains surveillance data on air quality in New York City, highligh
 # Project Files
 * Air-Quality – HTML Report: Interactive report with code, Plotly visualizations, and a few static plots.
 * Air-Quality.Rmd - R markdown
-* Air-Quality.csv - CSV file used for analysis
+
 # Interactive Report
 
 You can view the full interactive HTML report here:  
