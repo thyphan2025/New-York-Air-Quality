@@ -11,9 +11,11 @@ The dataset contains surveillance data on air quality in New York City, highligh
 # Project Files
 * Air-Quality – HTML Report: Interactive report with code, Plotly visualizations, and a few static plots.
 * Air-Quality.Rmd - R markdown
+* Air-Quality.csv - The CSV file is taken from the website on Jun 24, 2025
+
+**Notes:** This static file is included to ensure the code runs correctly. For the live, updated version, visit the source link above.
 
 # Interactive Report
-
 You can view the full interactive HTML report here:  
 ## [View Report](https://thyphan2025.github.io/New-York-Air-Quality/)
 
